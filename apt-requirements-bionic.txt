@@ -1,0 +1,5 @@
+clang-format-8
+clang-tidy-8
+ninja-build
+pandoc
+pkg-config
