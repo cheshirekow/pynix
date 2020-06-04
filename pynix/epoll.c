@@ -85,7 +85,7 @@ static PyTypeObject g_epoll_event_type = {
     .tp_members = g_epoll_event_members,
 };
 
-PyTypeObject* pynix_epoll_event_get_type() {
+PyTypeObject* pynix_epoll_event_get_type(void) {
   return &g_epoll_event_type;
 }
 
@@ -193,7 +193,7 @@ static PyTypeObject g_epoll_eventbuf_type = {
 
 };
 
-PyTypeObject* pynix_epoll_eventbuf_get_type() {
+PyTypeObject* pynix_epoll_eventbuf_get_type(void) {
   return &g_epoll_eventbuf_type;
 }
 
@@ -260,7 +260,7 @@ static PyTypeObject g_epoll_eventbufiter_type = {
     .tp_iternext = (iternextfunc)epoll_eventbufiter_iternext,
 };
 
-PyTypeObject* pynix_epoll_eventbufiter_get_type() {
+PyTypeObject* pynix_epoll_eventbufiter_get_type(void) {
   return &g_epoll_eventbufiter_type;
 }
 
@@ -356,9 +356,6 @@ size_t pynix_epoll_defmethods(PyMethodDef* defs) {
 
   return (def - defs);
 }
-
-#define EXPORT_CONST(name) \
-  PyModule_AddObject(module, #name, PyLong_FromLong(name));
 
 int pynix_epoll_addobjects(PyObject* module) {
   EXPORT_CONST(EPOLL_CLOEXEC);

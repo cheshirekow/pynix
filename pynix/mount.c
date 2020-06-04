@@ -44,9 +44,6 @@ size_t pynix_mount_defmethods(PyMethodDef* defs) {
   return (def - defs);
 }
 
-#define EXPORT_CONST(name) \
-  PyModule_AddObject(module, #name, PyLong_FromLong(name));
-
 int pynix_mount_addobjects(PyObject* module) {
   EXPORT_CONST(MS_BIND);
   EXPORT_CONST(MS_REMOUNT);

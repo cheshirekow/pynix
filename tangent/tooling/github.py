@@ -15,8 +15,13 @@ import subprocess
 import sys
 import tempfile
 
-import github
-import magic
+if True:
+
+  if os.path.samefile(sys.path[0], os.path.dirname(__file__)):
+    sys.path.pop(0)
+
+  import github
+  import magic
 
 logger = logging.getLogger(__name__)
 
@@ -356,12 +361,13 @@ def main():
     pass
 
   args = argparser.parse_args()
-  argdict = get_argdict(args)
-  command = argdict.pop("command")
 
   if hasattr(args, "tag"):
     if getattr(args, "tag") == "from-travis":
       setattr(args, "tag", os.environ["TRAVIS_TAG"])
+
+  argdict = get_argdict(args)
+  command = argdict.pop("command")
 
   if command == "create-pseudorelease-tag":
     create_pseudorelease_tag(args.reposlug, args.branch)
@@ -369,6 +375,8 @@ def main():
     tag = argdict.pop("tag")
     if tag.startswith("pseudo-"):
       argdict["branch"] = tag[len("pseudo-"):]
+    else:
+      argdict["tag"] = tag
     sync_doc_artifacts(**argdict)
   elif command == "push-release":
     push_release(args.repo_slug, args.tag, args.message, args.files)

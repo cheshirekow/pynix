@@ -84,7 +84,7 @@ static PyTypeObject g_sigset_type = {
     .tp_new = PyType_GenericNew,
 };
 
-PyTypeObject* pynix_sigset_get_type() {
+PyTypeObject* pynix_sigset_get_type(void) {
   return &g_sigset_type;
 }
 

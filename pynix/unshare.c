@@ -3,6 +3,8 @@
 
 #include <sched.h>
 
+#include "pynix/clone_constants.h"
+
 /* =============================================================================
  * pynix.unshare()
  * ========================================================================== */
@@ -39,9 +41,6 @@ size_t pynix_unshare_defmethods(PyMethodDef* defs) {
   return (def - defs);
 }
 
-#define EXPORT_CONST(name) \
-  PyModule_AddObject(module, #name, PyLong_FromLong(name));
-
 int pynix_unshare_addobjects(PyObject* module) {
   EXPORT_CONST(CLONE_FILES);
   EXPORT_CONST(CLONE_FS);
@@ -50,9 +49,7 @@ int pynix_unshare_addobjects(PyObject* module) {
   EXPORT_CONST(CLONE_NEWNET);
   EXPORT_CONST(CLONE_NEWNS);
   EXPORT_CONST(CLONE_NEWPID);
-#ifdef CLONE_NEWTIME
   EXPORT_CONST(CLONE_NEWTIME);
-#endif
   EXPORT_CONST(CLONE_NEWUSER);
   EXPORT_CONST(CLONE_NEWUTS);
   EXPORT_CONST(CLONE_SYSVSEM);

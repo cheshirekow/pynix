@@ -145,13 +145,6 @@ set_property(
   APPEND
   PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${_copyfiles} ${_genbits})
 
-add_custom_target(
-  push-pynix-github-pseudorelease-tag
-  COMMAND python -B ${TANGENT_TOOLING}/github.py create-pseudorelease-tag
-          cheshirekow/pynix \$\${TRAVIS_BRANCH}
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  COMMENT "Pushing psuedo-release tag")
-
 set(_deploykey)
 if(IS_TRAVIS_CI)
   set(_deploykey ${CMAKE_CURRENT_BINARY_DIR}/pynix-rtd.deploy_key)

@@ -5,12 +5,15 @@ enum { NUM_MODULE_METHODS = 30 };
 
 static PyMethodDef g_method_defs[NUM_MODULE_METHODS] = {{NULL, NULL, 0}};
 
+static const char g_pynix_docstr[] =
+    "pynix provides thin wrappers around linux specific system APIs";
+
 #if PY_MAJOR_VERSION >= 3
 
 static struct PyModuleDef g_pynix_def = {  //
     .m_base = PyModuleDef_HEAD_INIT,
     .m_name = "pynix",
-    .m_doc = "pynix provides thin wrappers around linux specific system APIs",
+    .m_doc = g_pynix_docstr,
     .m_size = 0,
     .m_methods = g_method_defs,
     .m_slots = NULL,
@@ -28,9 +31,9 @@ static PyObject* g_pynix_error;
 #endif
 
 #if PY_MAJOR_VERSION >= 3
-PyMODINIT_FUNC PyInit__pynix() {
+PyMODINIT_FUNC PyInit__pynix(void) {
 #else
-void init_pynix() {
+PyMODINIT_FUNC init_pynix(void) {
 #endif
   PyObject* module;
   size_t method_idx = 0;
@@ -70,7 +73,7 @@ void init_pynix() {
 #if PY_MAJOR_VERSION >= 3
   module = PyModule_Create(&g_pynix_def);
 #else
-  module = Py_InitModule("pynix", g_method_defs);
+  module = Py_InitModule3("_pynix", g_method_defs, g_pynix_docstr);
 #endif
 
   if (module == NULL) {

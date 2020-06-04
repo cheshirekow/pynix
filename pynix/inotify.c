@@ -123,7 +123,7 @@ static PyTypeObject g_inotify_event_type = {
     .tp_members = g_inotify_event_members,
 };
 
-PyTypeObject* pynix_inotify_event_get_type() {
+PyTypeObject* pynix_inotify_event_get_type(void) {
   return &g_inotify_event_type;
 }
 
@@ -192,9 +192,6 @@ size_t pynix_inotify_defmethods(PyMethodDef* defs) {
 
   return (def - defs);
 }
-
-#define EXPORT_CONST(name) \
-  PyModule_AddObject(module, #name, PyLong_FromLong(name));
 
 int pynix_inotify_addobjects(PyObject* module) {
   EXPORT_CONST(IN_ACCESS);
