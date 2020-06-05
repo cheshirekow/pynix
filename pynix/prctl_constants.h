@@ -1,7 +1,6 @@
 #pragma once
 // Copyright 2020 Josh Bialkowski <josh.bialkowski@gmail.com>
 
-
 #ifndef PR_SET_PDEATHSIG
 #define PR_SET_PDEATHSIG 1
 #endif

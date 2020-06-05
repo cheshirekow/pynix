@@ -1,7 +1,6 @@
 #pragma once
 // Copyright 2020 Josh Bialkowski <josh.bialkowski@gmail.com>
 
-
 #ifndef CLONE_VM
 #define CLONE_VM 0x00000100
 #endif

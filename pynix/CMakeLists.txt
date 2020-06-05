@@ -18,6 +18,8 @@ add_custom_command(
          ${CMAKE_CURRENT_SOURCE_DIR}/docstr.c
   COMMAND python -B ${CMAKE_CURRENT_SOURCE_DIR}/codegen/gen_docstr.py --out-dir
           ${CMAKE_CURRENT_SOURCE_DIR}
+  COMMAND clang-format-8 -style=File -i ${CMAKE_CURRENT_SOURCE_DIR}/docstr.h
+          ${CMAKE_CURRENT_SOURCE_DIR}/docstr.c
   DEPENDS codegen/docdb.rst codegen/gen_docstr.py codegen/docstr.h.in
           codegen/docstr.c.in)
 list(APPEND _genfiles docstr.h docstr.c)
@@ -26,6 +28,8 @@ add_custom_command(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/prctl_constants.h
   COMMAND python -B ${CMAKE_CURRENT_SOURCE_DIR}/codegen/gen_constants.py
           --out-dir ${CMAKE_CURRENT_SOURCE_DIR} prctl
+  COMMAND clang-format-8 -style=File -i
+          ${CMAKE_CURRENT_SOURCE_DIR}/prctl_constants.h
   DEPENDS codegen/gen_constants.py codegen/constants.h.in)
 list(APPEND _genfiles prctl_constants.h)
 
@@ -33,6 +37,8 @@ add_custom_command(
   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/clone_constants.h
   COMMAND python -B ${CMAKE_CURRENT_SOURCE_DIR}/codegen/gen_constants.py
           --out-dir ${CMAKE_CURRENT_SOURCE_DIR} clone
+  COMMAND clang-format-8 -style=File -i
+          ${CMAKE_CURRENT_SOURCE_DIR}/clone_constants.h
   DEPENDS codegen/gen_constants.py codegen/constants.h.in)
 list(APPEND _genfiles clone_constants.h)
 
@@ -55,17 +61,13 @@ foreach(cflag ${_pydev_cflags_raw})
   endif()
 endforeach()
 
-check_call(
-  COMMAND python-config --includes
-  OUTPUT_VARIABLE _pydev_includes
-  OUTPUT_STRIP_TRAILING_WHITESPACE)
+check_call(COMMAND python-config --includes
+           OUTPUT_VARIABLE _pydev_includes OUTPUT_STRIP_TRAILING_WHITESPACE)
 string(REGEX REPLACE " +" ";" _pydev_includes "${_pydev_includes}")
 string(REGEX REPLACE "-I" "" _pydev_includes "${_pydev_includes}")
 
-check_call(
-  COMMAND python-config --ldflags
-  OUTPUT_VARIABLE _pydev_ldflags_raw
-  OUTPUT_STRIP_TRAILING_WHITESPACE)
+check_call(COMMAND python-config --ldflags
+           OUTPUT_VARIABLE _pydev_ldflags_raw OUTPUT_STRIP_TRAILING_WHITESPACE)
 string(REGEX REPLACE " +" ";" _pydev_ldflags_raw "${_pydev_ldflags_raw}")
 unset(_pydev_libdirs)
 unset(_pydev_ldflags)
@@ -79,10 +81,8 @@ foreach(ldflag ${_pydev_ldflags_raw})
   endif()
 endforeach()
 
-check_call(
-  COMMAND python-config --libs
-  OUTPUT_VARIABLE _pydev_libs
-  OUTPUT_STRIP_TRAILING_WHITESPACE)
+check_call(COMMAND python-config --libs
+           OUTPUT_VARIABLE _pydev_libs OUTPUT_STRIP_TRAILING_WHITESPACE)
 string(REGEX REPLACE " +" ";" _pydev_libs "${_pydev_libs}")
 
 execute_process(
@@ -169,8 +169,7 @@ check_call(
     python -B ${TANGENT_TOOLING}/get_wheel_name.py --name libpynix
     --version-from=${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
     --has-extension-module
-  OUTPUT_VARIABLE _wheel_filename
-  OUTPUT_STRIP_TRAILING_WHITESPACE)
+  OUTPUT_VARIABLE _wheel_filename OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/.egg
@@ -195,15 +194,11 @@ add_custom_command(
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 add_custom_target(pynix-wheel-localenv DEPENDS ${_distdir}/${_wheel_filename})
 
-check_call(
-  COMMAND id -u
-  OUTPUT_VARIABLE _user_id
-  OUTPUT_STRIP_TRAILING_WHITESPACE)
+check_call(COMMAND id -u OUTPUT_VARIABLE _user_id
+                                         OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-check_call(
-  COMMAND id -g
-  OUTPUT_VARIABLE _group_id
-  OUTPUT_STRIP_TRAILING_WHITESPACE)
+check_call(COMMAND id -g OUTPUT_VARIABLE _group_id
+                                         OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 unset(_wheels)
 set(_manylinux_names "cp27-cp27m" "cp27-cp27mu" "cp35-cp35m" "cp36-cp36m"
@@ -211,8 +206,7 @@ set(_manylinux_names "cp27-cp27m" "cp27-cp27mu" "cp35-cp35m" "cp36-cp36m"
 foreach(pyslug ${_manylinux_names})
   set(_platform manylinux2010_x86_64)
   set(_linux_wheelfile libpynix-${_src_version}-${pyslug}-linux_x86_64.whl)
-  set(_manylinux_wheelfile
-      libpynix-${_src_version}-${pyslug}-${_platform}.whl)
+  set(_manylinux_wheelfile libpynix-${_src_version}-${pyslug}-${_platform}.whl)
 
   set(_docker_run
       # cmake-format: off
