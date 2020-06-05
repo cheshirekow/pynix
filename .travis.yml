@@ -11,7 +11,6 @@ env:
   - DOCKER_IMAGE=quay.io/pypa/manylinux2010_x86_64
     PLAT=manylinux2010_x86_64
   jobs:
-  - PYSLUG=None
   - PYSLUG=cp27-cp27m
   - PYSLUG=cp27-cp27mu
   - PYSLUG=cp35-cp35m
@@ -45,28 +44,48 @@ script:
     ninja pynix-wheel-${PYSLUG};
   fi
 
+_is_pseudo_release: &is-pseudo-release
+  repo = cheshirekow/pynix
+  AND tag IS present
+  AND tag =~ ^pseudo-((master)|(staging))$
+
+_not_pseudo_tag: &not-pseudo-release
+  repo = cheshirekow/pynix
+  AND (tag IS NOT present
+        OR tag =~ ^(?!pseudo-).*$)
+
+_is_release: &is-release
+  repo == cheshirekow/pynix
+  AND tag IS present
+  AND (tag =~ ^pseudo-((master)|(staging))$
+        OR tag =~ ^v\d+\.\d+\.\d+)
+
 jobs:
   exclude:
-  - python: '3.6'
-    env:
-    - PYSLUG=None
-    - PYSLUG=cp27-cp27m
-    - PYSLUG=cp27-cp27mu
-    - PYSLUG=cp35-cp35m
-    - PYSLUG=cp36-cp36m
-    - PYSLUG=cp37-cp37m
-    - PYSLUG=cp38-cp38
-    if: repo = cheshirekow/pynix
-        AND tag IS present
-        AND tag =~ ^pseudo-((master)|(staging))$
+    - env: PYSLUG=cp27-cp27m
+      if: *is-pseudo-release
+    - env: PYSLUG=cp27-cp27mu
+      if: *is-pseudo-release
+    - env: PYSLUG=cp35-cp35m
+      if: *is-pseudo-release
+    - env: PYSLUG=cp36-cp36m
+      if: *is-pseudo-release
+    - env: PYSLUG=cp37-cp37m
+      if: *is-pseudo-release
+    - env: PYSLUG=cp38-cp38
+      if: *is-pseudo-release
 
   include:
   - stage: test
+
   - python: '2.7'
     env: PYSLUG=None
-    if: repo = cheshirekow/pynix
-        AND (tag IS NOT present
-             OR tag =~ ^(?!pseudo-).*$)
+    if: *not-pseudo-release
+
+  - python: '2.7'
+    env: PYSLUG=None
+    if: *not-pseudo-release
+
   - stage: deploy
     name: deploy-tag
     if: repo = cheshirekow/pynix
@@ -75,11 +94,12 @@ jobs:
     script:
     - python -B ${TRAVIS_BUILD_DIR}/tangent/tooling/github.py
         create-pseudorelease-tag cheshirekow/pynix ${TRAVIS_BRANCH}
+
   - name: deploy-artifacts
-    if: repo = cheshirekow/pynix
-        AND tag IS present
-        AND (tag =~ ^pseudo-((master)|(staging))$
-             OR tag =~ ^v\d+\.\d+\.\d+)
+    if: *is-release
+    python: 3.6
+    env:
+    - "PYSLUG=None"
     script:
     - mkdir ${TRAVIS_BUILD_DIR}/../cmake-build
     - cd ${TRAVIS_BUILD_DIR}/../cmake-build
@@ -88,12 +108,13 @@ jobs:
       -DCMAKE_INSTALL_PREFIX=./install
       ${TRAVIS_BUILD_DIR}
     - ninja push-pynix-github-release
+
   - name: deploy-docs
     python: 3.6
-    if: repo == cheshirekow/pynix
-        AND tag IS present
-        AND (tag =~ ^pseudo-((master)|(staging))$
-             OR tag =~ ^v\d+\.\d+\.\d+)
+    env:
+    - "PYSLUG=None"
+    if: *is-release
+
     script:
     - mkdir ${TRAVIS_BUILD_DIR}/../cmake-build
     - cd ${TRAVIS_BUILD_DIR}/../cmake-build
