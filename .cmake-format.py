@@ -36,6 +36,14 @@ with section("parse"):
                 "INTERFACE": "*",
             }
           },
+          "LIBDIRS": {
+            "pargs": "*",
+            "kwargs": {
+                "PUBLIC": "*",
+                "PRIVATE": "*",
+                "INTERFACE": "*",
+            }
+          },
           "SRCS": "*",
           "DEPS": {
             "pargs": "*",

@@ -40,11 +40,44 @@ set_source_files_properties(${_genfiles} PROPERTIES GENERATED TRUE)
 add_custom_target(genfiles-pynix DEPENDS ${_genfiles})
 
 check_call(
+  COMMAND python-config --cflags
+  OUTPUT_VARIABLE _pydev_cflags_raw
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+string(REGEX REPLACE " +" ";" _pydev_cflags_raw "${_pydev_cflags_raw}")
+unset(_pydev_cflags)
+foreach(cflag ${_pydev_cflags_raw})
+  if("${cflag}" MATCHES "-(I|(isystem)|(iquote)).*")
+    # pass
+  elseif("${cflag}" MATCHES "-isystem.*")
+    # pass
+  else()
+    list(APPEND _pydev_cflags)
+  endif()
+endforeach()
+
+check_call(
   COMMAND python-config --includes
   OUTPUT_VARIABLE _pydev_includes
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 string(REGEX REPLACE " +" ";" _pydev_includes "${_pydev_includes}")
 string(REGEX REPLACE "-I" "" _pydev_includes "${_pydev_includes}")
+
+check_call(
+  COMMAND python-config --ldflags
+  OUTPUT_VARIABLE _pydev_ldflags_raw
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+string(REGEX REPLACE " +" ";" _pydev_ldflags_raw "${_pydev_ldflags_raw}")
+unset(_pydev_libdirs)
+unset(_pydev_ldflags)
+foreach(ldflag ${_pydev_ldflags_raw})
+  if("${ldflag}" MATCHES "-L.*")
+    list(APPEND _pydev_libdirs "${ldflag}")
+  elseif("${ldflag}" MATCHES "-l.*")
+    # pass
+  else()
+    list(APPEND _pydev_ldflags)
+  endif()
+endforeach()
 
 check_call(
   COMMAND python-config --libs
@@ -84,6 +117,7 @@ cc_library(
   PROPERTIES OUTPUT_NAME "_pynix" #
              SUFFIX ${_pydev_suffix}
   INC PRIVATE ${_pydev_includes}
+  LIBDIRS PRIVATE ${_pydev_libdirs}
   DEPS ${_pydev_libs})
 
 # NOTE(josh): we can't include this in the cc_library() call above because the
@@ -178,7 +212,7 @@ foreach(pyslug ${_manylinux_names})
   set(_platform manylinux2010_x86_64)
   set(_linux_wheelfile libpynix-${_src_version}-${pyslug}-linux_x86_64.whl)
   set(_manylinux_wheelfile
-      libpynix-${_src_version}-${pyslug}-${_platform}_x86_64.whl)
+      libpynix-${_src_version}-${pyslug}-${_platform}.whl)
 
   set(_docker_run
       # cmake-format: off
@@ -212,8 +246,8 @@ foreach(pyslug ${_manylinux_names})
     DEPENDS ${_distdir}/${_linux_wheelfile})
   list(APPEND _wheels ${_distdir}/${_manylinux_wheelfile})
 
-  add_custom_target(
-    pynix-wheel-${pyslug} DEPENDS ${_distdir}/${_manylinux_wheelfile})
+  add_custom_target(pynix-wheel-${pyslug}
+                    DEPENDS ${_distdir}/${_manylinux_wheelfile})
 endforeach()
 
 add_custom_target(pynix-wheels-manylinux DEPENDS ${_wheels})

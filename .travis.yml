@@ -46,19 +46,34 @@ script:
   fi
 
 jobs:
+  exclude:
+  - python: '3.6'
+    env:
+    - PYSLUG=None
+    - PYSLUG=cp27-cp27m
+    - PYSLUG=cp27-cp27mu
+    - PYSLUG=cp35-cp35m
+    - PYSLUG=cp36-cp36m
+    - PYSLUG=cp37-cp37m
+    - PYSLUG=cp38-cp38
+    if: repo = cheshirekow/pynix
+        AND tag IS present
+        AND tag =~ ^pseudo-((master)|(staging))$
+
   include:
   - stage: test
-    python: '3.5'
-    env: PYSLUG=None
   - python: '2.7'
     env: PYSLUG=None
+    if: repo = cheshirekow/pynix
+        AND (tag IS NOT present
+             OR tag =~ ^(?!pseudo-).*$)
   - stage: deploy
     name: deploy-tag
     if: repo = cheshirekow/pynix
         AND NOT tag IS present
         AND branch =~ ^((master)|(staging))$
     script:
-    - python -B ${TRAVIS_BUILD_DIR}/tangent/tooling/github.py \
+    - python -B ${TRAVIS_BUILD_DIR}/tangent/tooling/github.py
         create-pseudorelease-tag cheshirekow/pynix ${TRAVIS_BRANCH}
   - name: deploy-artifacts
     if: repo = cheshirekow/pynix
@@ -66,6 +81,12 @@ jobs:
         AND (tag =~ ^pseudo-((master)|(staging))$
              OR tag =~ ^v\d+\.\d+\.\d+)
     script:
+    - mkdir ${TRAVIS_BUILD_DIR}/../cmake-build
+    - cd ${TRAVIS_BUILD_DIR}/../cmake-build
+    - cmake -G Ninja
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      -DCMAKE_INSTALL_PREFIX=./install
+      ${TRAVIS_BUILD_DIR}
     - ninja push-pynix-github-release
   - name: deploy-docs
     python: 3.6
@@ -74,6 +95,12 @@ jobs:
         AND (tag =~ ^pseudo-((master)|(staging))$
              OR tag =~ ^v\d+\.\d+\.\d+)
     script:
+    - mkdir ${TRAVIS_BUILD_DIR}/../cmake-build
+    - cd ${TRAVIS_BUILD_DIR}/../cmake-build
+    - cmake -G Ninja
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      -DCMAKE_INSTALL_PREFIX=./install
+      ${TRAVIS_BUILD_DIR}
     - ninja push-pynix-rtd-repo
 
 stages:

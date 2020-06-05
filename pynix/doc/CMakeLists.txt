@@ -147,15 +147,17 @@ set_property(
 
 set(_deploykey)
 if(IS_TRAVIS_CI)
+  set(_encodedkey
+      ${CMAKE_SOURCE_DIR}/tangent/tooling/deploy_keys/pynix-rtd.deploy_key.enc)
   set(_deploykey ${CMAKE_CURRENT_BINARY_DIR}/pynix-rtd.deploy_key)
   add_custom_command(
     OUTPUT ${_deploykey}
     COMMAND
       # cmake-format: off
       openssl aes-256-cbc
-      -K $ENV{encrypted_4bf912706780_key}
-      -iv $ENV{encrypted_4bf912706780_iv}
-      -in ${CMAKE_SOURCE_DIR}/tangent/tooling/deploy_keys/pynix-rtd.enc
+      -K $ENV{encrypted_4e5c65f25f5d_key}
+      -iv $ENV{encrypted_4e5c65f25f5d_iv}
+      -in ${_encodedkey}
       -out ${_deploykey}
       -d
       # cmake-format: on
