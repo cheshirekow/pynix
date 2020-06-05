@@ -145,8 +145,6 @@ set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
 
 set(_deploykey)
 if(IS_TRAVIS_CI)
-  set(_encodedkey
-      ${CMAKE_SOURCE_DIR}/tangent/tooling/deploy_keys/pynix-rtd.deploy_key.enc)
   set(_deploykey ${CMAKE_CURRENT_BINARY_DIR}/pynix-rtd.deploy_key)
   add_custom_command(
     OUTPUT ${_deploykey}
@@ -155,7 +153,7 @@ if(IS_TRAVIS_CI)
       openssl aes-256-cbc
       -K $ENV{encrypted_4e5c65f25f5d_key}
       -iv $ENV{encrypted_4e5c65f25f5d_iv}
-      -in ${_encodedkey}
+      -in ${CMAKE_SOURCE_DIR}/tangent/tooling/deploy_keys/pynix-rtd.enc
       -out ${_deploykey}
       -d
       # cmake-format: on
