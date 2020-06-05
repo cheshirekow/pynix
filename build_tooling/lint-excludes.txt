@@ -22,6 +22,7 @@ venv
 # generated files
 gtangent/messages\.pb.*
 gtangentmm/gencache/.*
+pynix/prctl_constants.h
 tangent/json/test/test_types.*
 
 # TODO(josh): fix errors and remove these from the whitelist

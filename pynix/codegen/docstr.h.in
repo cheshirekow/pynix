@@ -1,0 +1,6 @@
+#pragma once
+// Copyright 2020 Josh Bialkowski <josh.bialkowski@gmail.com>
+
+{% for symbol in sorted(docdict.keys()) -%}
+const char* g_{{symbol}}_docstr;
+{% endfor %}

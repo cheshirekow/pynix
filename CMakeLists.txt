@@ -13,7 +13,7 @@ include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 
 find_package(Threads REQUIRED)
-find_package(fmt)
+find_package(fmt QUIET)
 
 if(EXISTS ${CMAKE_SOURCE_DIR}/build_tooling/cmake)
   list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build_tooling/cmake)

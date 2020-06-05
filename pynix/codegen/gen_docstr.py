@@ -8,6 +8,8 @@ import json
 import re
 import os
 
+import jinja2
+
 
 def split_sections(content):
   out = {}
@@ -22,6 +24,7 @@ def split_sections(content):
       current_section = out[symbol] = []
       continue
 
+    line = json.dumps(line).strip('"')
     current_section.append(line)
 
   return out
@@ -30,33 +33,31 @@ def split_sections(content):
 def main():
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument("--out-dir", default=".")
-  parser.add_argument("docdb")
   args = parser.parse_args()
 
-  with io.open(args.docdb, "r", encoding="utf-8") as infile:
+  thisdir = os.path.dirname(os.path.realpath(__file__))
+  docdb_path = os.path.join(thisdir, "docdb.rst")
+
+  with io.open(docdb_path, "r", encoding="utf-8") as infile:
     content = infile.read()
   docdict = split_sections(content)
 
   headerpath = os.path.join(args.out_dir, "docstr.h")
   sourcepath = os.path.join(args.out_dir, "docstr.c")
 
-  with io.open(headerpath, "w", encoding="utf-8") as outfile:
-    outfile.write("#pragma once\n")
-    outfile.write(
-        "// Copyright 2020 Josh Bialkowski <josh.bialkowski@gmail.com>\n\n")
-    for symbol in sorted(docdict.keys()):
-      outfile.write("const char* g_{}_docstr;\n".format(symbol))
+  env = jinja2.Environment(
+      loader=jinja2.FileSystemLoader(thisdir))
+  env.globals["sorted"] = sorted
 
+  tpl = env.get_template("docstr.h.in")
+  content = tpl.render(docdict=docdict)
+  with io.open(headerpath, "w", encoding="utf-8") as outfile:
+    outfile.write(content)
+
+  tpl = env.get_template("docstr.c.in")
+  content = tpl.render(docdict=docdict)
   with io.open(sourcepath, "w", encoding="utf-8") as outfile:
-    outfile.write(
-        "// Copyright 2020 Josh Bialkowski <josh.bialkowski@gmail.com>\n\n")
-    outfile.write("#include \"pynix/docstr.h\"\n\n")
-    for symbol, lines in sorted(docdict.items()):
-      outfile.write("const char* g_{}_docstr = \n".format(symbol))
-      for line in lines:
-        printme = json.dumps(line).strip('"')
-        outfile.write('"{}\\n"\n'.format(printme))
-      outfile.write(";\n\n")
+    outfile.write(content)
 
 
 if __name__ == "__main__":

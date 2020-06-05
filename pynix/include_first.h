@@ -17,7 +17,7 @@ typedef struct {
   PyObject* data;
 } PynixEpollEvent;
 
-PyTypeObject* pynix_epoll_event_get_type();
+PyTypeObject* pynix_epoll_event_get_type(void);
 
 typedef struct {
   PyObject_HEAD;
@@ -27,7 +27,7 @@ typedef struct {
   Py_ssize_t stride;
 } PynixEpollEventBuf;
 
-PyTypeObject* pynix_epoll_eventbuf_get_type();
+PyTypeObject* pynix_epoll_eventbuf_get_type(void);
 
 typedef struct {
   PyObject_HEAD;
@@ -36,28 +36,28 @@ typedef struct {
   Py_ssize_t idx;
 } PynixEpollEventBufIter;
 
-PyTypeObject* pynix_epoll_eventbufiter_get_type();
+PyTypeObject* pynix_epoll_eventbufiter_get_type(void);
 
 typedef struct {
   PyObject_HEAD;
   struct inotify_event cobj;
 } PynixInotifyEvent;
 
-PyTypeObject* pynix_inotify_event_get_type();
+PyTypeObject* pynix_inotify_event_get_type(void);
 
 typedef struct {
   PyObject_HEAD;
   struct signalfd_siginfo cobj;
 } PynixSiginfo;
 
-PyTypeObject* pynix_siginfo_get_type();
+PyTypeObject* pynix_siginfo_get_type(void);
 
 typedef struct {
   PyObject_HEAD;
   sigset_t cobj;
 } PynixSigset;
 
-PyTypeObject* pynix_sigset_get_type();
+PyTypeObject* pynix_sigset_get_type(void);
 
 size_t pynix_chroot_defmethods(PyMethodDef* defs);
 size_t pynix_epoll_defmethods(PyMethodDef* defs);
@@ -78,3 +78,11 @@ int pynix_signalfd_addobjects(PyObject* module);
 int pynix_sigprocmask_addobjects(PyObject* module);
 int pynix_sigset_addobjects(PyObject* module);
 int pynix_unshare_addobjects(PyObject* module);
+
+#if PY_MAJOR_VERSION >= 3
+#define EXPORT_CONST(name) \
+  PyModule_AddObject(module, #name, PyLong_FromLong(name));
+#else
+#define EXPORT_CONST(name) \
+  PyModule_AddObject(module, #name, PyInt_FromLong(name));
+#endif

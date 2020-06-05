@@ -1,0 +1,12 @@
+// Copyright 2020 Josh Bialkowski <josh.bialkowski@gmail.com>
+
+#include "pynix/docstr.h"
+
+{% for symbol, lines in docdict.items() -%}
+const char* g_{{symbol}}_docstr =
+  {% for line in lines %}
+  "{{line}}\n"
+  {%- endfor %}
+  "";
+{% endfor -%}
+

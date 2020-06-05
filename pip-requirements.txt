@@ -13,5 +13,4 @@ pylint==2.4.4; python_version >= '3.0'
 python-magic==0.4.15
 sphinx-jinja==1.1.0
 sphinx-rtd-theme==0.4.3
-
-
+cmake-format==0.6.10

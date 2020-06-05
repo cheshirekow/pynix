@@ -140,17 +140,8 @@ add_custom_target(
 add_dependencies(doc doc-pynix)
 set_property(GLOBAL APPEND PROPERTY global_doc_files ${_sphinx_manifest})
 
-set_property(
-  DIRECTORY
-  APPEND
-  PROPERTY ADDITIONAL_MAKE_CLEAN_FILES ${_copyfiles} ${_genbits})
-
-add_custom_target(
-  push-pynix-github-pseudorelease-tag
-  COMMAND python -B ${TANGENT_TOOLING}/github.py create-pseudorelease-tag
-          cheshirekow/pynix \$\${TRAVIS_BRANCH}
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  COMMENT "Pushing psuedo-release tag")
+set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
+                                       ${_copyfiles} ${_genbits})
 
 set(_deploykey)
 if(IS_TRAVIS_CI)
@@ -160,8 +151,8 @@ if(IS_TRAVIS_CI)
     COMMAND
       # cmake-format: off
       openssl aes-256-cbc
-      -K $ENV{encrypted_4bf912706780_key}
-      -iv $ENV{encrypted_4bf912706780_iv}
+      -K $ENV{encrypted_4e5c65f25f5d_key}
+      -iv $ENV{encrypted_4e5c65f25f5d_iv}
       -in ${CMAKE_SOURCE_DIR}/tangent/tooling/deploy_keys/pynix-rtd.enc
       -out ${_deploykey}
       -d

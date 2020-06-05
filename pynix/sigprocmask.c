@@ -27,7 +27,7 @@ static PyObject* pynix_sigprocmask(PyObject* module, PyObject* args) {
     char msgbuf[64];
     snprintf(msgbuf, sizeof(msgbuf), "Ignoring `oldset` of type %s",
              oldset_obj->ob_type->tp_name);
-    PyErr_WarnEx(PyExc_RuntimeWarning, 1, msgbuf);
+    PyErr_WarnEx(PyExc_RuntimeWarning, msgbuf, 1);
 #endif
   }
 
@@ -56,8 +56,8 @@ size_t pynix_sigprocmask_defmethods(PyMethodDef* defs) {
 }
 
 int pynix_sigprocmask_addobjects(PyObject* module) {
-  PyModule_AddObject(module, "SIG_BLOCK", PyLong_FromLong(SIG_BLOCK));
-  PyModule_AddObject(module, "SIG_UNBLOCK", PyLong_FromLong(SIG_UNBLOCK));
-  PyModule_AddObject(module, "SIG_SETMASK", PyLong_FromLong(SIG_SETMASK));
+  EXPORT_CONST(SIG_BLOCK);
+  EXPORT_CONST(SIG_UNBLOCK);
+  EXPORT_CONST(SIG_SETMASK);
   return 0;
 }

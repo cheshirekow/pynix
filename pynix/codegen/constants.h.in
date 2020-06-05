@@ -1,0 +1,8 @@
+#pragma once
+// Copyright 2020 Josh Bialkowski <josh.bialkowski@gmail.com>
+
+{% for (name, value) in values %}
+#ifndef {{name}}
+#define {{name}} {{value}}
+#endif
+{% endfor %}

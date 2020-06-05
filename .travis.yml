@@ -2,69 +2,137 @@ dist: bionic
 language: python
 
 python:
-- '2.7'
-- '3.5'
 - '3.6'
-
-go:
-- 1.13
-
-before_install:
-- sudo add-apt-repository --no-update -y ppa:longsleep/golang-backports
-- sudo apt-get update
-- sudo apt-get -y install
-    $(tr '\n' ' ' < apt-requirements.txt)
-
-install:
-- export GOROOT=/usr/lib/go-1.13
-- export GOPATH=$HOME/gopath
-- export PATH=$GOROOT/bin:$PATH:$GOPATH/bin
-- export PATH=$PATH:${PWD}/cmake/node_modules/.bin
-- go get $(tr '\n' ' ' < go-requirements.txt)
-- npm --prefix ./cmake install ./cmake
-- pip install -r pip-requirements.txt
-
-script:
-- mkdir build-nrd
-- cd build-nrd
-- cmake -G Ninja
-  -DCMAKE_BUILD_TYPE=RelWithDebInfo
-  -DCMAKE_INSTALL_PREFIX=./install
-  ..
-- ninja
-- ninja better-test
-- ninja lint
 
 env:
   global:
-    # GITHUB_ACCESS_TOKEN=
-    secure: "e62y3i4FG7KsJ/I8aVKoPk5CG0L7/TW1K4M+BLt5zULsKGyRw6b53I97p5Tc1zcAHqcocFeYL/eC3AucG3VNvyv6LIZuv5Y0upF/MG++tvkfV9Iyok76mP70DXR/ikAJDMgZSdEL/6uTTJ4XfBuH/VvCMMBvj+5ORSL65KIfqXcexj2JWaNtEEfwiVSkDvQZYYbHLRjQdAXzzI7g1xh+8mCmuFAvtn6U1cIZpdQv5u1DNIry8PoQ2asHr+vaCN9iVXvkWcUjoXpJTp96Hd8eO40ts3v3Ja1yJ7GzH09zjbKJS63dcB0LfV5uLjybJCkQ03102ua0V+E5OzPn5VYeIRSRWmdo35e9xZjqqbtNdHqNayOOpew/ik+wf2Nmzva5MCRf154pFfWjBDL4zh0WGBW8FyJ/9NxdYDJsOIznHBPBHCXnQOlrpdInIptuoLnT52V7MOq9XIiuqLlAH8Tr0GzNSJIJfwwhwJuGxgYi2DPDH8PRmkbHbvY/mN2WBxNFfHBSfCQGZJt6kHtEE+xIi0QQXME0h36V/8sOsmQDzArNFl2Um5GCXodtIjZI6Ga3nQhHDRRiQKJz0V/9OsJF4GteGw94xt/l6PkCT0o4D1cmPIELrBTzaEMnXYKRQEOPnvViyV8eJF2RBnaqNk+FqI+hmGtXXUKAdXZWAzyS66I="
+  # GITHUB_ACCESS_TOKEN=
+  -   secure: "TMSRG8Nliqg1TPkvgbaev6H8y6S7iFhUCENQd95bsm3tz4WRXCGpko+SGhGCqf5XRxYTJ0eAAExF4tXvoiybZ4cMJ6PS+1DqcMzJ0SRgqDPJSrjDEwFdpGoO+bhDFKwHfVkWJRZPI9o+LAFPDP/bhdZXfJXtfewdqz+ExqbyMMKb8FYmvUyJbPisnutJGqrTBCQBVdwtwQAVAwbnEbZcwCEwNkBLkhT18SgrFs3FIoKGoXKTur66+ptyP8IBEapxAMFWsNKkuHZMlkGjyPFM/QEvvHKExDrWBN2kWGEckGWECXxLwzFtYzti4tcQICop62cynbsm3luJLoWaT4wCTA9K5iy5xsjHY84VSZzHQedtwQMK5Ky8U0ifG3QokD0r3E7X8nRxqvvsa45RXAfRQe5m5u5nAtk5toKRkRG5IRPJjf+hJdR6yr2k51EZsZN8VsA+4y2Xpyo2LOwGZuw4AYdRpjq3yQ8yvgXIYZ1GS4NdQbDZ2DKNUSqJ9qL7lDkGud0yY+CRYpxsc+QN0SJLbvQK0i0hLbcrPrg+MxfNhpFQZptkvZQH93mWDNYNozOKFY/83m5ZNI3cPR+5UuifyOtOjmWyc+E8LFlCA5RNDENcvyz5Eqvz37XrENwSkt2ssOQt1RJ5479J/GO6b64py1nRrdg53DA36q/5TeGpCF8="
+  - DOCKER_IMAGE=quay.io/pypa/manylinux2010_x86_64
+    PLAT=manylinux2010_x86_64
+  jobs:
+  - PYSLUG=cp27-cp27m
+  - PYSLUG=cp27-cp27mu
+  - PYSLUG=cp35-cp35m
+  - PYSLUG=cp36-cp36m
+  - PYSLUG=cp37-cp37m
+  - PYSLUG=cp38-cp38
+
+before_install:
+- sudo apt-get update
+- sudo apt-get -y install $(tr '\n' ' ' < apt-requirements-bionic.txt)
+
+install:
+- pip install -r pip-requirements.txt;
+- if [ "${PYSLUG}" != "None" ]; then
+    docker pull $DOCKER_IMAGE;
+  fi
+
+script:
+- mkdir ${TRAVIS_BUILD_DIR}/../cmake-build
+- cd ${TRAVIS_BUILD_DIR}/../cmake-build
+- cmake -G Ninja
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo
+  -DCMAKE_INSTALL_PREFIX=./install
+  ${TRAVIS_BUILD_DIR}
+- ninja pynix-wheel-${PYSLUG};
+
+_is_pseudo_release: &is-pseudo-release
+  repo = cheshirekow/pynix
+  AND tag IS present
+  AND tag =~ ^pseudo-((master)|(staging))$
+
+_not_pseudo_tag: &not-pseudo-release
+  repo = cheshirekow/pynix
+  AND (tag IS NOT present
+        OR tag =~ ^(?!pseudo-).*$)
+
+_is_release: &is-release
+  repo == cheshirekow/pynix
+  AND tag IS present
+  AND (tag =~ ^pseudo-((master)|(staging))$
+        OR tag =~ ^v\d+\.\d+\.\d+)
+
+_local_script: &local-script
+  - mkdir ${TRAVIS_BUILD_DIR}/../cmake-build
+  - cd ${TRAVIS_BUILD_DIR}/../cmake-build
+  - cmake -G Ninja
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo
+    -DCMAKE_INSTALL_PREFIX=./install
+    ${TRAVIS_BUILD_DIR}
+  - ninja
+  - ninja better-test
+  - ninja lint
+  - ninja pynix-wheel-localenv
 
 jobs:
+  exclude:
+    - env: PYSLUG=cp27-cp27m
+      if: *is-pseudo-release
+    - env: PYSLUG=cp27-cp27mu
+      if: *is-pseudo-release
+    - env: PYSLUG=cp35-cp35m
+      if: *is-pseudo-release
+    - env: PYSLUG=cp36-cp36m
+      if: *is-pseudo-release
+    - env: PYSLUG=cp37-cp37m
+      if: *is-pseudo-release
+    - env: PYSLUG=cp38-cp38
+      if: *is-pseudo-release
+
   include:
+  - stage: test
+
+  - python: '2.7'
+    env: PYSLUG=None
+    if: *not-pseudo-release
+    script: *local-script
+
+  - python: '3.6'
+    env: PYSLUG=None
+    if: *not-pseudo-release
+    script: *local-script
+
   - stage: deploy
     name: deploy-tag
     if: repo = cheshirekow/pynix
         AND NOT tag IS present
         AND branch =~ ^((master)|(staging))$
     script:
-    - ninja push-pynix-github-pseudorelease-tag
-  - name: deploy-wheels
-    if: repo = cheshirekow/pynix
-        AND tag IS present
-        AND (tag =~ ^pseudo-((master)|(staging))$
-             OR tag =~ ^v\d+\.\d+\.\d+)
+    - python -B ${TRAVIS_BUILD_DIR}/tangent/tooling/github.py
+        create-pseudorelease-tag cheshirekow/pynix ${TRAVIS_BRANCH}
+
+  - name: deploy-artifacts
+    if: *is-release
+    python: 3.6
+    env:
+    - "PYSLUG=None"
     script:
+    - mkdir ${TRAVIS_BUILD_DIR}/../cmake-build
+    - cd ${TRAVIS_BUILD_DIR}/../cmake-build
+    - cmake -G Ninja
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      -DCMAKE_INSTALL_PREFIX=./install
+      ${TRAVIS_BUILD_DIR}
     - ninja push-pynix-github-release
+
   - name: deploy-docs
     python: 3.6
-    if: repo == cheshirekow/pynix
-        AND tag IS present
-        AND (tag =~ ^pseudo-((master)|(staging))$
-             OR tag =~ ^v\d+\.\d+\.\d+)
+    env:
+    - "PYSLUG=None"
+    if: *is-release
+
+    script:
+    - mkdir ${TRAVIS_BUILD_DIR}/../cmake-build
+    - cd ${TRAVIS_BUILD_DIR}/../cmake-build
+    - cmake -G Ninja
+      -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      -DCMAKE_INSTALL_PREFIX=./install
+      ${TRAVIS_BUILD_DIR}
     - ninja push-pynix-rtd-repo
 
 stages:
   - test
   - name: deploy
-    if: type IS push
+    if: type == push
+

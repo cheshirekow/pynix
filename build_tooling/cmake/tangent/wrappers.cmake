@@ -180,6 +180,9 @@ set(KNOWN_PROPERTIES ${_propslist})
 # *SRCS*: a list of source files that go into compilation. These translate to
 # the positional arguments of add_library().
 #
+# *LIBDIRS*: a list of directories that should be added using
+# target_link_directories
+#
 # *DEPS*: a list of libraries to link against. These should be names that cmake
 # understands. They are passed as the positional arguments to
 # target_link_libraires
@@ -189,12 +192,29 @@ set(KNOWN_PROPERTIES ${_propslist})
 function(cc_library target_name)
   set(flags)
   set(oneargs)
-  set(multiargs INC SRCS DEPS PKGDEPS PROPERTIES)
+  set(multiargs INC SRCS LIBDIRS DEPS PKGDEPS PROPERTIES)
   cmake_parse_arguments(_args "${flags}" "${oneargs}" "${multiargs}" ${ARGN})
 
   add_library(${target_name} ${_args_UNPARSED_ARGUMENTS} ${_args_SRCS})
   if(_args_INC)
     target_include_directories(${target_name} ${_args_INC})
+  endif()
+  if(_args_LIBDIRS)
+    if(${CMAKE_VERSION} GREATER_EQUAL "3.13.0")
+      target_link_directories(${target_name} ${_args_LIBDIRS})
+    else()
+      list(GET _args_LIBDIRS 0 arg0)
+      if(NOT "${_arg0}" MATCHES "(PUBLIC)|(PRIVATE)|(INTERFACE)")
+        list(REMOVE_AT _args_LIBDIRS 0)
+      endif()
+      string(REGEX REPLACE "([^;]+)" "-L${CMAKE_MATCH_1}" libdirflags
+                           "${_args_LIBDIRS}")
+      set_property(
+        TARGET ${target_name}
+        APPEND
+        PROPERTY LINK_FLAGS "${libdirflags}")
+    endif()
+
   endif()
   if(_args_DEPS)
     list(GET _args_DEPS 0 dep0)

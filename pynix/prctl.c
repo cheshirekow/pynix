@@ -5,6 +5,12 @@
 
 #include <structmember.h>
 
+#include "pynix/prctl_constants.h"
+
+/* =============================================================================
+ * manylinux is very old
+ * ========================================================================== */
+
 /* =============================================================================
  * pynix.prctl()
  * ========================================================================== */
@@ -130,9 +136,6 @@ size_t pynix_prctl_defmethods(PyMethodDef* defs) {
 
   return (def - defs);
 }
-
-#define EXPORT_CONST(name) \
-  PyModule_AddObject(module, #name, PyLong_FromLong(name));
 
 int pynix_prctl_addobjects(PyObject* module) {
   EXPORT_CONST(PR_CAP_AMBIENT);
