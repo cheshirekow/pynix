@@ -35,14 +35,7 @@ script:
   -DCMAKE_BUILD_TYPE=RelWithDebInfo
   -DCMAKE_INSTALL_PREFIX=./install
   ${TRAVIS_BUILD_DIR}
-- if [ "${PYSLUG}" == "None" ]; then ninja; fi
-- if [ "${PYSLUG}" == "None" ]; then ninja better-test; fi
-- if [ "${PYSLUG}" == "None" ]; then ninja lint; fi
-- if [ "${PYSLUG}" == "None" ]; then
-    ninja pynix-wheel-localenv;
-  else
-    ninja pynix-wheel-${PYSLUG};
-  fi
+- ninja pynix-wheel-${PYSLUG};
 
 _is_pseudo_release: &is-pseudo-release
   repo = cheshirekow/pynix
@@ -59,6 +52,18 @@ _is_release: &is-release
   AND tag IS present
   AND (tag =~ ^pseudo-((master)|(staging))$
         OR tag =~ ^v\d+\.\d+\.\d+)
+
+_local_script: &local-script
+  - mkdir ${TRAVIS_BUILD_DIR}/../cmake-build
+  - cd ${TRAVIS_BUILD_DIR}/../cmake-build
+  - cmake -G Ninja
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo
+    -DCMAKE_INSTALL_PREFIX=./install
+    ${TRAVIS_BUILD_DIR}
+  - ninja
+  - ninja better-test
+  - ninja lint
+  - ninja pynix-wheel-localenv
 
 jobs:
   exclude:
@@ -81,10 +86,12 @@ jobs:
   - python: '2.7'
     env: PYSLUG=None
     if: *not-pseudo-release
+    script: *local-script
 
-  - python: '2.7'
+  - python: '3.6'
     env: PYSLUG=None
     if: *not-pseudo-release
+    script: *local-script
 
   - stage: deploy
     name: deploy-tag
